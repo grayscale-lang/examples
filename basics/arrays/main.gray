@@ -119,9 +119,14 @@ do iterate_with_index(){
         println("${i}: ${color}")
     }
 
-    // Index only, discard value
+    // Index only, explicitlly discard value
     for_each i, _ in colors {
         println(i)
+    }
+
+    // Index only
+    for_each i in colors {
+        println()
     }
 
     // Inline array literal
