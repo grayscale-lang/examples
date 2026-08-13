@@ -1,0 +1,142 @@
+// Arrays — declaration, iteration, and stdlib usage
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ There are two types of arrays in Grayscale:
+
+    Fixed size arrays (immutable):
+    - Declared with the 'const' keyword
+    - MUST be given an explicit type (no type inference)
+    - MUST be given a size at the declaration site
+    - Elements CANNOT be modified, appended, or removed
+    - Number of elements CANNOT exceed the size but CAN be less than the size;
+      remaining elements will be initialized to the default value of 0
+
+    Dynamic arrays (mutable):
+    - Declared with 'mut' or without any keyword (mutability is default)
+    - MUST be given an explicit type UNLESS declared as a return value from a function
+    - NO size is ever provided
+    - Can grow and shrink
+
+ Both types share these rules:
+    - CAN be declared at file scope OR inside a function scope
+    - Can contain elements of ANY data type including composite types
+    - Can be iterated over with 'for ... in range()' or 'for_each' loops
+*/
+
+
+//FILE SCOPE DECLARATIONS
+const MY_ARRAY [int, 10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+mut another_array [string] = {"Paul", "Jan", "Peter", "Mary", "John"}
+
+
+
+//FUNCTION SCOPE DECLARATION
+do declare_an_array(){
+    //Dynamic array declaration WITHOUT the 'mut' keyword
+    dynamicArr [int] = {1,2,3,4,5}
+    println(dynamicArr)
+}
+//============================================================
+
+//USING A FILE SCOPE DECLARED ARRAY IN A FUNCTION
+do iterate_over_array(arr [int]){
+    for_each a in arr {
+        println(a)
+    }
+}
+//============================================================
+
+//ACCESSING ELEMENTS BY INDEX
+do access_elements(){
+    mut fruits [string] = {"apple", "banana", "cherry"}
+    println(fruits[0]) // "apple"
+    println(fruits[2]) // "cherry"
+}
+//============================================================
+
+//MODIFYING ELEMENTS IN A MUTABLE ARRAY
+do modify_elements(){
+    mut numbers [int] = {10, 20, 30}
+    numbers[0] = 99
+    numbers[2] = 77
+    println(numbers) // {99, 20, 77}
+}
+//============================================================
+
+//USING STDLIB ARRAY FUNCTIONS
+import @arrays
+
+do use_stdlib_functions(){
+    mut names [string] = {"Willy", "Clint"}
+
+    // Adding elements
+    arrays.append(names, "Humphrey")
+    println(names) // {"Willy", "Clint", "Humphrey"}
+
+    // Checking length
+    println(len(names)) // 3
+
+    // Checking if a value exists
+    println(arrays.contains(names, "Bob")) // false
+
+    // Removing elements
+    arrays.remove(names, "Clint")
+    println(names) // {"Willy", "Humphrey"}
+
+    // Removing by index
+    arrays.remove_at(names, 0)
+    println(names) // {"Humphrey"}
+}
+//============================================================
+
+//ARRAYS WITH COMPOSITE TYPES
+const Person struct {
+    firtsName string
+    age u8
+}
+
+do composite_array(){
+    mut people [Person] = {
+        Person{firstName: "Willy", age: 52},
+        Person{firstName: "Clint", age: 94},
+        Person{firstName: "Humphrey", age: 57}
+    }
+
+    for_each p in people {
+        println("${p.firstName}, ${p.age}")
+    }
+}
+//============================================================
+
+//ITERATING WITH INDEX AND VALUE
+do iterate_with_index(){
+    mut colors [string] = {"red", "green", "blue"}
+
+    // Both index and value
+    for_each i, color in colors {
+        println("${i}: ${color}")
+    }
+
+    // Index only, discard value
+    for_each i, _ in colors {
+        println(i)
+    }
+
+    // Inline array literal
+    for_each val in {10, 20, 30, 40} {
+        println(val)
+    }
+}
+//============================================================
+
+do main(){
+    declare_an_array()
+    iterate_over_array(MY_ARRAY)
+    access_elements()
+    modify_elements()
+    use_stdlib_functions()
+    composite_array()
+    iterate_with_index()
+}
