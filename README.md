@@ -1,6 +1,6 @@
 # Grayscale Examples
 
-Hand-written code examples for [Grayscale](https://github.com/grayscale-lang/grayscale). For full language documentation, see the [Standard](https://github.com/grayscale-lang/grayscale/blob/main/STANDARD.md).
+Code examples for [Grayscale](https://github.com/grayscale-lang/grayscale). For full language documentation, see the [Standard](https://github.com/grayscale-lang/grayscale/blob/main/STANDARD.md).
 
 ## Directory Structure
 
