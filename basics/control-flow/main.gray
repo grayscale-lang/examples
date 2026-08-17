@@ -1,0 +1,220 @@
+// Control Flow — if/or/otherwise, loops, when/is, break, continue
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Grayscale control flow keywords:
+    - if / or / otherwise (else is an alias for otherwise)
+    - for ... in range()
+    - for_each ... in
+    - as_long_as (while is an alias for as_long_as)
+    - loop (infinite loop, must use break or return to exit)
+    - when / is / default (pattern matching)
+    - break, continue, return
+*/
+
+
+//IF / OR / OTHERWISE
+do conditionals(){
+    mut x int = 5
+
+    if x < 0 {
+        println("negative")
+    } or x == 0 {
+        println("zero")
+    } otherwise {
+        println("positive")
+    }
+
+    // 'else' works the same as 'otherwise'
+    if x > 10 {
+        println("big")
+    } else { //Compile time error if you mix 'otherwise' and 'else' usage in same file
+        println("small")
+    }
+}
+//============================================================
+
+//FOR LOOP WITH RANGE
+do for_loop_examples(){
+    // Basic range: 0 to 9
+    for i in range(0, 10) {
+        println(i)
+    }
+
+    // Range with step
+    for i in range(0, 20, 2) {
+        println(i) // 0, 2, 4, 6, 8, 10, 12, 14, 16, 18
+    }
+
+    // Counting backwards
+    for i in range(10, 0, -1) {
+        println(i) // 10, 9, 8, 7, 6, 5, 4, 3, 2, 1
+    }
+
+    // Discard loop variable with _
+    for _ in range(0, 3) {
+        println("hello") // prints "hello" 3 times
+    }
+}
+//============================================================
+
+//FOR_EACH LOOP
+do for_each_examples(){
+    mut fruits [string] = {"apple", "banana", "cherry"}
+
+    // Value only
+    for_each fruit in fruits {
+        println(fruit)
+    }
+
+    // Index and value
+    for_each i, fruit in fruits {
+        println("${i}: ${fruit}")
+    }
+
+    // Iterating over a string
+    for_each i, ch in "hello" {
+        println("${i}: ${ch}")
+    }
+
+    // Inline array literal
+    for_each val in {100, 200, 300} {
+        println(val)
+    }
+}
+//============================================================
+
+//WHILE LOOP (as_long_as)
+do while_loop_examples(){
+    // Using the 'as_long_as' keyword
+    mut count int = 0
+    as_long_as count < 5 {
+        println(count)
+        count++
+    }
+
+    // 'while' is an alias — identical behavior
+    mut n int = 10
+    while n > 0 { //Compile time error if you mix 'as_long_as' and 'while' usage in same file
+        println(n)
+        n--
+    }
+}
+//============================================================
+
+//INFINITE LOOP
+do infinite_loop_example(){
+    mut attempts int = 0
+    loop {
+        attempts++
+        if attempts == 3 {
+            println("done after ${attempts} attempts")
+            break
+        }
+    }
+}
+//============================================================
+
+//BREAK AND CONTINUE
+do break_and_continue(){
+    // Break exits the loop entirely
+    for i in range(0, 100) {
+        if i == 5 {
+            break
+        }
+        println(i) // 0, 1, 2, 3, 4
+    }
+
+    // Continue skips to the next iteration
+    for i in range(0, 10) {
+        if i % 2 == 0 {
+            continue
+        }
+        println(i) // 1, 3, 5, 7, 9
+    }
+}
+//============================================================
+
+//WHEN / IS (PATTERN MATCHING)
+const Direction enum {
+    NORTH
+    EAST
+    SOUTH
+    WEST
+}
+
+do when_examples(){
+    // Matching on integers
+    mut x int = 3
+    when x {
+        is 1 { println("one") }
+        is 2, 3 { println("two or three") }
+        is range(4, 10) { println("four to nine") }
+        default { println("other") }
+    }
+
+    // Matching on strings
+    mut cmd string = "quit"
+    when cmd {
+        is "start" { println("starting") }
+        is "stop", "quit" { println("stopping") }
+        default { println("unknown command") }
+    }
+
+    // Matching on enums with #strict for exhaustiveness
+    mut dir Direction = Direction.NORTH
+    #strict
+    when dir {
+        is Direction.NORTH { println("north") }
+        is Direction.EAST { println("east") }
+        is Direction.SOUTH { println("south") }
+        is Direction.WEST { println("west") }
+    }
+
+    // Implicit enum selector shorthand
+    dir = .SOUTH
+    #strict
+    when dir {
+        is .NORTH { println("north") }
+        is .EAST { println("east") }
+        is .SOUTH { println("south") }
+        is .WEST { println("west") }
+    }
+}
+//============================================================
+
+//MEMBERSHIP OPERATORS (in / not_in)
+do membership_examples(){
+    mut numbers [int] = {1, 2, 3, 4, 5}
+
+    if 3 in numbers {
+        println("found 3")
+    }
+
+    if 10 not_in numbers {
+        println("10 is not in the list")
+    }
+
+    // Also works with range
+    if 5 in range(0, 10) {
+        println("5 is in range 0..9")
+    }
+
+    // Shorthand !in is the same as not_in
+    if 99 !in numbers {
+        println("99 is not in the list")
+    }
+}
+//============================================================
+
+do main(){
+    conditionals()
+    for_loop_examples()
+    for_each_examples()
+    while_loop_examples()
+    infinite_loop_example()
+    break_and_continue()
+    when_examples()
+    membership_examples()
+}
