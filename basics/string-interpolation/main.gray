@@ -1,0 +1,106 @@
+// String Interpolation — embedding expressions in strings
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Grayscale uses ${expr} for string interpolation.
+
+    Rules:
+    - Embed any expression inside "${...}" within a double-quoted string
+    - Works with variables, field access, function calls, arithmetic
+    - Raw strings (backtick-delimited) do NOT process interpolation
+    - Escape sequences: \n, \r, \t, \\, \", \xNN
+*/
+
+import @strings
+
+//BASIC INTERPOLATION
+do basic_interpolation(){
+    mut name string = "World"
+    mut greeting string = "Hello, ${name}!"
+    println(greeting) // "Hello, World!"
+
+    mut age int = 30
+    println("I am ${age} years old")
+
+    mut pi float = 3.14159
+    println("Pi is approximately ${pi}")
+}
+//============================================================
+
+//EXPRESSIONS INSIDE INTERPOLATION
+do expression_interpolation(){
+    mut x int = 10
+    mut y int = 20
+    println("${x} + ${y} = ${x + y}")
+
+    mut items [string] = {"a", "b", "c"}
+    println("first item: ${items[0]}")
+    println("count: ${len(items)}")
+}
+//============================================================
+
+//STRUCT FIELD ACCESS IN INTERPOLATION
+const Person struct {
+    name string
+    age int
+}
+
+do struct_interpolation(){
+    mut p Person = Person{name: "Alice", age: 25}
+    println("${p.name} is ${p.age} years old")
+}
+//============================================================
+
+//ESCAPE SEQUENCES
+do escape_sequences(){
+    println("line one\nline two")
+    println("tab\there")
+    println("a backslash: \\")
+    println("she said \"hello\"")
+    println("hex byte: \x48") // 'H'
+}
+//============================================================
+
+//RAW STRINGS (backtick-delimited — no interpolation, no escapes)
+do raw_strings(){
+    mut path string = `C:\Users\test\file.txt`
+    println(path) // C:\Users\test\file.txt (literal)
+
+    mut regex_pattern string = `\d+\.\d+`
+    println(regex_pattern) // \d+\.\d+ (literal)
+
+    // ${name} is literal text, not interpolation
+    mut template string = `Hello, ${name}!`
+    println(template) // Hello, ${name}!
+
+    // Raw strings can span multiple lines
+    mut multi string = `line1
+line2
+line3`
+    println(multi)
+}
+//============================================================
+
+//BUILDING STRINGS WITH STDLIB
+do string_building(){
+    mut words [string] = {"hello", "beautiful", "world"}
+    mut sentence string = strings.join(words, " ")
+    println(sentence) // "hello beautiful world"
+
+    mut repeated string = strings.repeat("ha", 3)
+    println(repeated) // "hahaha"
+
+    mut upper string = strings.to_upper("grayscale")
+    println(upper) // "GRAYSCALE"
+}
+//============================================================
+
+do main(){
+    basic_interpolation()
+    expression_interpolation()
+    struct_interpolation()
+    escape_sequences()
+    raw_strings()
+    string_building()
+}
