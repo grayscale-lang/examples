@@ -1,0 +1,155 @@
+// Variables & Constants — mut, const, type inference, scope, and shadowing
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Grayscale has two kinds of bindings:
+
+    Mutable variables:
+    - Declared with the 'mut' keyword OR with no keyword at all
+      (mutability is the default)
+    - Can be reassigned after declaration
+    - Type annotations are optional when the compiler can infer the type
+
+    Constants:
+    - Declared with the 'const' keyword
+    - CANNOT be reassigned after declaration
+    - At file scope, primitive and array constants MUST have explicit types
+    - Inside function scope, type inference works for all const declarations
+
+ Scope rules:
+    - All variables and constants are block-scoped (delimited by {})
+    - Inner scopes can shadow outer variables of the same name
+*/
+
+
+//FILE SCOPE DECLARATIONS
+const MAX_SIZE int = 100
+const GREETING string = "Hello, Grayscale!"
+mut counter int = 0
+
+//============================================================
+
+//MUTABLE VARIABLE DECLARATIONS
+do mutable_examples(){
+    // Explicit 'mut' keyword with type annotation
+    mut x int = 69
+    println(x)
+
+    // Explicit 'mut' keyword with type inference
+    mut name = "Robert"
+    println(name)
+
+    // No keyword at all — still mutable (mutability is the default)
+    age int = 30
+    println(age)
+
+    // Reassignment is allowed for mutable variables
+    x = 100
+    name = "Bob"
+    age = 31
+    println("${name} is ${age}")
+}
+//============================================================
+
+//CONSTANT DECLARATIONS
+do constant_examples(){
+    // Inside a function, type inference works for const
+    const pi = 3.14159
+    const is_active = true
+    const message = "immutable"
+
+    println(pi)
+    println(is_active)
+    println(message)
+
+    // With explicit type annotation (always valid)
+    const max_retries int = 5
+    println(max_retries)
+}
+//============================================================
+
+//TYPE INFERENCE
+do type_inference_examples(){
+    // Inferred from literals
+    mut a = 69          // int
+    mut b = 3.14        // float
+    mut c = "hello"     // string
+    mut d = true        // bool
+    mut e = 'A'         // char
+
+    println(type_of(a)) // "int"
+    println(type_of(b)) // "float"
+    println(type_of(c)) // "string"
+    println(type_of(d)) // "bool"
+    println(type_of(e)) // "char"
+
+    // Arrays and maps always require explicit types
+    mut nums [int] = {1, 2, 3}
+    mut scores [string:int] = {"math": 95, "science": 88}
+    println(nums)
+    println(scores)
+}
+//============================================================
+
+//SCOPE AND SHADOWING
+do scope_and_shadowing(){
+    mut x int = 10
+    println(x) // 10
+
+    if true {
+        mut x int = 20 // Shadows outer x. Warning will be thrown.
+        println(x) // 20
+    }
+
+    println(x) // 10, outer x is unchanged
+}
+//============================================================
+
+//MULTIPLE RETURN VALUE ASSIGNMENT
+do get_pair() -> (string, int) {
+    return "Robert", 30
+}
+
+do multi_return_examples(){
+    // Both variables' types are inferred from the function return
+    mut name, age = get_pair()
+    println("${name}: ${age}")
+
+    // Discarding a value with the blank identifier
+    mut _, just_age = get_pair()
+    println(just_age)
+}
+//============================================================
+
+//INCREMENT AND DECREMENT
+do increment_decrement(){
+    mut count int = 0
+    count++ // 1
+    count++ // 2
+    count-- // 1
+    println(count) // 1
+}
+//============================================================
+
+//COMPOUND ASSIGNMENT OPERATORS
+do compound_assignment(){
+    mut x int = 10
+    x += 5   // 15
+    x -= 3   // 12
+    x *= 2   // 24
+    x /= 4   // 6
+    x %= 4   // 2
+    println(x) // 2
+}
+//============================================================
+
+do main(){
+    mutable_examples()
+    constant_examples()
+    type_inference_examples()
+    scope_and_shadowing()
+    multi_return_examples()
+    increment_decrement()
+    compound_assignment()
+}
