@@ -1,0 +1,165 @@
+// Error Handling — Error type, or_return, ensure, panic, assert
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Grayscale handles errors through return values, not exceptions.
+
+    Key concepts:
+    - Functions return (T, Error) tuples for fallible operations
+    - Callers MUST destructure the result (single-var assignment panics)
+    - The blank identifier _ discards values you don't need
+    - or_return propagates errors up the call chain
+    - ensure schedules cleanup when a function exits
+    - error("msg") creates an Error value
+    - nil represents "no error"
+    - panic("msg") terminates immediately
+    - assert(cond) terminates if condition is false
+*/
+
+import @io
+
+//BASIC ERROR HANDLING WITH (T, Error) TUPLES
+do divide(a int, b int) -> (int, Error) {
+    if b == 0 {
+        return 0, error("division by zero")
+    }
+    return a / b, nil
+}
+
+do basic_error_handling(){
+    // Correct: destructure to handle the error
+    mut result, err = divide(10, 3)
+    if err != nil {
+        println("Error: something went wrong")
+        return
+    }
+    println(result) // 3
+
+    // Correct: explicitly discard the error when you know it won't fail
+    mut val, _ = divide(10, 2)
+    println(val) // 5
+
+    // Handle the error case
+    mut bad_result, bad_err = divide(10, 0)
+    if bad_err != nil {
+        println("caught: division by zero")
+    }
+}
+//============================================================
+
+//OR_RETURN — ERROR PROPAGATION SHORTHAND
+do read_and_process() -> (string, Error) {
+    // If read_file fails, or_return immediately returns the error
+    mut content = io.read_file("data.txt") or_return
+
+    // Process content only if read succeeded
+    println("file has ${len(content)} bytes")
+    return content, nil
+}
+
+do or_return_with_fallback() -> (string, Error) {
+    // Custom fallback values when propagating
+    mut content = io.read_file("data.txt") or_return "", error("failed to load file")
+    return content, nil
+}
+
+do or_return_examples(){
+    mut data, err = read_and_process()
+    if err != nil {
+        println("read_and_process failed (expected if file missing)")
+    }
+}
+//============================================================
+
+//ENSURE — CLEANUP ON FUNCTION EXIT
+do open_resource() -> (string, Error) {
+    return "resource_handle", nil
+}
+
+do close_resource() {
+    println("resource cleaned up")
+}
+
+do process_with_cleanup() {
+    // ensure guarantees cleanup runs when this function exits,
+    // whether it returns normally or via early return
+    ensure close_resource()
+
+    mut handle, err = open_resource()
+    if err != nil {
+        return // close_resource() still runs
+    }
+
+    println("working with ${handle}")
+    // close_resource() runs when function ends
+}
+
+do ensure_examples(){
+    process_with_cleanup()
+}
+//============================================================
+
+//CREATING AND CHECKING ERRORS
+do validate_age(age int) -> (int, Error) {
+    if age < 0 {
+        return 0, error("age cannot be negative")
+    }
+    if age > 150 {
+        return 0, error("age is unreasonably high")
+    }
+    return age, nil
+}
+
+do error_creation_examples(){
+    mut age, err = validate_age(-5)
+    if err != nil {
+        println("validation failed")
+    }
+
+    mut valid_age, err2 = validate_age(25)
+    if err2 != nil {
+        println("unexpected error")
+    } otherwise {
+        println("valid age: ${valid_age}")
+    }
+}
+//============================================================
+
+//DISCARDING RETURN VALUES WITH _
+do get_triple() -> (string, int, bool) {
+    return "hello", 42, true
+}
+
+do blank_identifier_examples(){
+    // Discard values you don't need
+    mut value, _ = divide(10, 2)
+    println(value)
+
+    // Discard multiple values
+    const _, middle, _ = get_triple()
+    println(middle)
+}
+//============================================================
+
+//PANIC AND ASSERT
+do panic_and_assert_examples(){
+    // assert checks a condition at runtime
+    mut x int = 5
+    assert(x > 0, "x must be positive")
+    assert(x == 5) // message is optional
+
+    // panic terminates the program immediately
+    // Uncomment to see it in action:
+    // panic("something went terribly wrong")
+}
+//============================================================
+
+do main(){
+    basic_error_handling()
+    or_return_examples()
+    ensure_examples()
+    error_creation_examples()
+    blank_identifier_examples()
+    panic_and_assert_examples()
+}
