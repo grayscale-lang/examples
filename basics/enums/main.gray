@@ -1,0 +1,181 @@
+// Enums — integer, string, flags, tagged, and pattern matching
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Enums define a type with a fixed set of named values.
+
+    Three flavors:
+    - Integer enums (default): auto-increment from 0
+    - Flags enums (#flags): powers of 2 for bitwise operations
+    - Tagged enums: variants can carry associated data (payloads)
+
+    Rules:
+    - Declared with 'const' at file scope (never inside functions)
+    - Variants must be on separate lines (no semicolons)
+    - Enums are NOT integers — cannot compare with raw numbers directly
+    - Use the implicit selector shorthand (.VARIANT) when the type is known
+    - Cast to/from int with cast() when needed
+*/
+
+
+//INTEGER ENUMS (default, auto-incrementing from 0)
+const Direction enum {
+    NORTH    // 0
+    EAST     // 1
+    SOUTH    // 2
+    WEST     // 3
+}
+
+do integer_enum_examples(){
+    mut dir Direction = Direction.NORTH
+    println(dir)
+
+    // Implicit selector shorthand
+    dir = .SOUTH
+    println(dir)
+
+    // Comparison with same enum type
+    if dir == .SOUTH {
+        println("heading south")
+    }
+
+    // Assigning enum to int (implicit widening)
+    mut status int = Direction.EAST
+    println(status) // 1
+
+    // Cast from int back to enum
+    mut d Direction = cast(2, Direction)
+    println(d) // SOUTH
+}
+//============================================================
+
+//ENUMS WITH EXPLICIT VALUES
+const HttpStatus enum {
+    OK = 200
+    NOT_FOUND = 404
+    SERVER_ERROR = 500
+}
+
+do explicit_value_examples(){
+    mut status HttpStatus = HttpStatus.OK
+    println(status)
+
+    mut code int = HttpStatus.NOT_FOUND
+    println(code) // 404
+}
+//============================================================
+
+//FLAGS ENUMS (powers of 2)
+#flags
+const Permissions enum {
+    READ      // 1
+    WRITE     // 2
+    EXECUTE   // 4
+    DELETE    // 8
+}
+
+do flags_enum_examples(){
+    mut perms int = cast(Permissions.READ, int) bit_or cast(Permissions.WRITE, int)
+    println(perms)
+
+    // Check if a flag is set
+    if perms bit_and cast(Permissions.READ, int) == cast(Permissions.READ, int) {
+        println("readable")
+    }
+
+    if perms bit_and cast(Permissions.EXECUTE, int) == 0 {
+        println("not executable")
+    }
+}
+//============================================================
+
+//TAGGED ENUMS (variants with data)
+const Shape enum {
+    Circle(float)
+    Rect(float, float)
+    Point
+}
+
+do tagged_enum_examples(){
+    // Constructing tagged variants
+    mut s Shape = Shape.Circle(3.14)
+    mut r Shape = Shape.Rect(10.0, 20.0)
+    mut p Shape = Shape.Point
+
+    // Implicit selector shorthand works with constructors too
+    mut s2 Shape = .Circle(5.0)
+
+    // Destructuring with when/is
+    when s {
+        is Shape.Circle(radius) {
+            println("Circle with radius ${radius}")
+        }
+        is Shape.Rect(w, h) {
+            println("Rectangle ${w} x ${h}")
+        }
+        is Shape.Point {
+            println("Just a point")
+        }
+    }
+
+    // Implicit selector in when/is
+    when r {
+        is .Circle(radius) { println("radius: ${radius}") }
+        is .Rect(w, h) { println("${w} x ${h}") }
+        is .Point { println("point") }
+    }
+}
+//============================================================
+
+//PATTERN MATCHING WITH #strict
+do strict_matching(){
+    mut dir Direction = .WEST
+
+    // #strict requires ALL variants to be handled (no default needed)
+    #strict
+    when dir {
+        is .NORTH { println("north") }
+        is .EAST { println("east") }
+        is .SOUTH { println("south") }
+        is .WEST { println("west") }
+    }
+}
+//============================================================
+
+//USING ENUMS IN FUNCTION PARAMETERS
+do describe_direction(d Direction) -> string {
+    when d {
+        is .NORTH { return "up" }
+        is .EAST { return "right" }
+        is .SOUTH { return "down" }
+        is .WEST { return "left" }
+        default { return "unknown" }
+    }
+}
+
+do enum_function_examples(){
+    println(describe_direction(.NORTH)) // "up"
+    println(describe_direction(.WEST))  // "left"
+}
+//============================================================
+
+//ENUMS IN ARRAYS
+do enums_in_arrays(){
+    mut directions [Direction] = {.NORTH, .EAST, .SOUTH, .WEST}
+
+    for_each d in directions {
+        println(d)
+    }
+}
+//============================================================
+
+do main(){
+    integer_enum_examples()
+    explicit_value_examples()
+    flags_enum_examples()
+    tagged_enum_examples()
+    strict_matching()
+    enum_function_examples()
+    enums_in_arrays()
+}
