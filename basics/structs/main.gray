@@ -1,0 +1,205 @@
+// Structs — fields, default values, namespaced functions, instance dispatch
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Structs are user-defined composite types with named fields.
+
+    Rules:
+    - Declared with 'const' at file scope (never inside functions)
+    - Fields must be on separate lines (no semicolons)
+    - Fields can have default values with = expr
+    - Instantiated with named field syntax: Point{x: 1, y: 2}
+    - Zero-initialized with empty literal: Point{}
+    - Heap-allocated with new(): returns a pointer (^Type)
+    - Can contain namespaced functions (methods)
+    - Recursive structs use pointer fields (^Type)
+*/
+
+//BASIC STRUCT
+const Point struct {
+    x int
+    y int
+}
+
+do basic_struct_examples(){
+    // Named field initialization
+    mut origin Point = Point{x: 0, y: 0}
+    println(origin)
+
+    // Zero-initialized
+    mut p Point = Point{}
+    println(p.x) // 0
+    println(p.y) // 0
+
+    // Field access and modification
+    p.x = 10
+    p.y = 20
+    println("${p.x}, ${p.y}")
+}
+//============================================================
+
+//DEFAULT FIELD VALUES
+const Config struct {
+    host string = "localhost"
+    port int = 8080
+    verbose bool = false
+}
+
+do default_value_examples(){
+    // All defaults
+    mut c = Config{}
+    println(c.host) // "localhost"
+    println(c.port) // 8080
+
+    // Override specific fields
+    mut c2 = Config{port: 3000, verbose: true}
+    println(c2.host) // "localhost" (default)
+    println(c2.port) // 3000 (overridden)
+    println(c2.verbose) // true (overridden)
+}
+//============================================================
+
+//HEAP ALLOCATION WITH new()
+do heap_allocation_examples(){
+    // new() returns a pointer: ^Point
+    mut p = new(Point)
+    p.x = 5
+    p.y = 10
+    println("${p.x}, ${p.y}")
+    println(type_of(p)) // "^Point"
+
+    // Deep copy with copy()
+    mut p2 = copy(p^)
+    println(type_of(p2))
+}
+//============================================================
+
+//STRUCT WITH NAMESPACED FUNCTIONS
+const Vec2 struct {
+    x int
+    y int
+
+    // Factory function (no self parameter — call via Vec2.create())
+    do create(x int, y int) -> Vec2 {
+        return Vec2{x: x, y: y}
+    }
+
+    // Instance function (first param is the struct — enables instance dispatch)
+    do length_squared(v Vec2) -> int {
+        return v.x * v.x + v.y * v.y
+    }
+
+    // Mutable receiver (modifies the caller's value)
+    do translate(&v Vec2, dx int, dy int) {
+        v.x = v.x + dx
+        v.y = v.y + dy
+    }
+
+    do add(a Vec2, b Vec2) -> Vec2 {
+        return Vec2{x: a.x + b.x, y: a.y + b.y}
+    }
+}
+
+do namespaced_function_examples(){
+    // Factory call (type-namespaced)
+    mut v = Vec2.create(3, 4)
+    println("${v.x}, ${v.y}")
+
+    // Instance dispatch (sugar for Vec2.length_squared(v))
+    mut len_sq int = v.length_squared()
+    println(len_sq) // 25
+
+    // Mutable receiver modifies the original
+    v.translate(10, 20)
+    println("${v.x}, ${v.y}") // 13, 24
+
+    // Static dispatch also works
+    mut sum Vec2 = Vec2.add(v, Vec2{x: 1, y: 1})
+    println("${sum.x}, ${sum.y}")
+}
+//============================================================
+
+//STRUCT WITH PRIVATE FUNCTIONS
+const Counter struct {
+    value int
+
+    private do validate(c Counter) -> bool {
+        return c.value >= 0
+    }
+
+    do increment(&c Counter) {
+        c.value = c.value + 1
+    }
+
+    do get(c Counter) -> int {
+        return c.value
+    }
+}
+
+do private_function_examples(){
+    mut c = Counter{value: 0}
+    c.increment()
+    c.increment()
+    c.increment()
+    println(c.get()) // 3
+}
+//============================================================
+
+//RECURSIVE STRUCTS (pointer fields)
+const Node struct {
+    val int
+    next ^Node
+}
+
+do recursive_struct_examples(){
+    mut a = new(Node)
+    mut b = new(Node)
+    mut c = new(Node)
+
+    a.val = 1
+    b.val = 2
+    c.val = 3
+
+    a.next = b
+    b.next = c
+
+    // Dot notation auto-dereferences pointer fields
+    println(a.val)        // 1
+    println(a.next.val)   // 2
+    println(a.next.next.val) // 3
+}
+//============================================================
+
+//STRUCT FIELDS INSPECTION
+do fields_example(){
+    mut p = Point{x: 1, y: 2}
+    mut field_names [string] = fields(p)
+    println(field_names) // {"x", "y"}
+}
+//============================================================
+
+//STRUCTS IN ARRAYS
+do structs_in_arrays(){
+    mut points [Point] = {
+        Point{x: 0, y: 0},
+        Point{x: 1, y: 1},
+        Point{x: 2, y: 4}
+    }
+
+    for_each p in points {
+        println("(${p.x}, ${p.y})")
+    }
+}
+//============================================================
+
+do main(){
+    basic_struct_examples()
+    default_value_examples()
+    heap_allocation_examples()
+    namespaced_function_examples()
+    private_function_examples()
+    recursive_struct_examples()
+    fields_example()
+    structs_in_arrays()
+}
