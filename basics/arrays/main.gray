@@ -25,6 +25,8 @@
     - Can be iterated over with 'for ... in range()' or 'for_each' loops
 */
 
+//USING STDLIB ARRAY FUNCTIONS
+import @arrays
 
 //FILE SCOPE DECLARATIONS
 const MY_ARRAY [int, 10] = {0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
@@ -65,9 +67,6 @@ do modify_elements(){
 }
 //============================================================
 
-//USING STDLIB ARRAY FUNCTIONS
-import @arrays
-
 do use_stdlib_functions(){
     mut names [string] = {"Willy", "Clint"}
 
@@ -93,7 +92,7 @@ do use_stdlib_functions(){
 
 //ARRAYS WITH COMPOSITE TYPES
 const Person struct {
-    firtsName string
+    firstName string
     age u8
 }
 
