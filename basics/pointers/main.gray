@@ -1,0 +1,155 @@
+// Pointers — addr, dereference, nil, const-sourced, raw pointers
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Pointers hold memory addresses pointing to values.
+
+    Syntax:
+    - ^Type  — pointer type (e.g., ^int, ^MyStruct)
+    - addr(x) — get the address of variable x
+    - p^     — dereference pointer p (read/write the value)
+    - raw(x) — unsafe pointer (no nil check, no const-source protection)
+    - new(Type) — heap-allocate a zero-initialized value, returns ^Type
+
+    Safety:
+    - Dereferencing a nil pointer causes a runtime panic
+    - addr() on a const variable gives a read-only pointer (writes rejected)
+    - The dot operator auto-dereferences pointers to structs (p.field == p^.field)
+    - No pointer arithmetic
+*/
+
+
+//BASIC POINTER USAGE
+do basic_pointer(){
+    mut x int = 69
+    mut p ^int = addr(x)
+
+    println(p)   // prints the address (0x...)
+    println(p^)  // 69, dereference to read the value
+
+    // Write through the pointer
+    p^ = 100
+    println(x)   // 100, original variable changed
+}
+//============================================================
+
+//POINTER ALIASING
+do pointer_aliasing(){
+    mut x int = 10
+    mut p1 = addr(x)
+    mut p2 = addr(x)
+
+    // Both pointers refer to the same memory
+    p1^ = 99
+    println(p2^) // 99
+    println(x)   // 99
+}
+//============================================================
+
+//CONST-SOURCED POINTERS (read-only)
+do const_pointer(){
+    const val int = 69
+    mut p = addr(val)
+
+    // Reading is allowed
+    println(p^) // 69
+
+    // Writing is rejected at compile time:
+    // p^ = 99 // ERROR — writing through a const-sourced pointer
+
+    // The const origin propagates through assignment
+    // mut q = p
+    // q^ = 99 // ERROR — same restriction
+}
+//============================================================
+
+//HEAP ALLOCATION WITH new()
+const Person struct {
+    name string
+    age int
+}
+
+do heap_allocation(){
+    // new() returns ^Person (pointer to heap-allocated, zero-initialized)
+    mut p = new(Person)
+    println(type_of(p)) // "^Person"
+
+    // Dot operator auto-dereferences the pointer
+    p.name = "Blake"
+    p.age = 30
+    println("${p.name}, ${p.age}") // "Blake, 30"
+
+    // Explicit dereference also works
+    println(p^.name) // "Blake"
+}
+//============================================================
+
+//NIL POINTERS
+do nil_pointer(){
+    mut p ^int = nil
+
+    if p == nil {
+        println("pointer is nil")
+    }
+
+    // Dereferencing nil would cause a runtime panic:
+    // println(p^) // PANIC — nil pointer dereference
+}
+//============================================================
+
+//RAW POINTERS (unsafe, no safety checks)
+do raw_pointer_example(){
+    mut x int = 69
+    mut p = raw(x)
+
+    // raw() bypasses nil checks and const-source protection
+    p^ = 99
+    println(x) // 99
+
+    // Use raw() only when nil checks are a measurable overhead
+    // and you guarantee pointer validity. Prefer addr() otherwise.
+}
+//============================================================
+
+//PASSING POINTERS TO FUNCTIONS
+do double_value(p ^int) {
+    p^ = p^ * 2
+}
+
+do pointer_as_param(){
+    mut x int = 5
+    double_value(addr(x))
+    println(x) // 10
+}
+//============================================================
+
+//POINTER COMPARISON
+do pointer_comparison(){
+    mut a int = 10
+    mut b int = 20
+    mut pa = addr(a)
+    mut pb = addr(b)
+    mut pa2 = addr(a)
+
+    // Equality check (same address?)
+    if pa == pa2 {
+        println("pa and pa2 point to same address")
+    }
+
+    if pa != pb {
+        println("pa and pb point to different addresses")
+    }
+}
+//============================================================
+
+do main(){
+    basic_pointer()
+    pointer_aliasing()
+    const_pointer()
+    heap_allocation()
+    nil_pointer()
+    raw_pointer_example()
+    pointer_as_param()
+    pointer_comparison()
+}
