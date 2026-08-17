@@ -1,0 +1,283 @@
+// Functions — declaration, params, returns, references, visibility, and more
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ All logic in Grayscale lives inside functions.
+ Functions are declared with the 'do' keyword.
+ Every program MUST have a main() function — it is the entry point
+ and is the only function never called by the programmer.
+
+ Function signatures can include:
+    - Standard parameter(s)
+    - Grouped parameters (same type)
+    - Mutable parameters with '&' (pass-by-reference)
+    - Default value parameters
+    - Named arguments at the call site
+    - Single return value
+    - Multiple (tuple) return values
+    - Named return values (documentation only)
+    - Error returns with (T, Error)
+    - Nothing at all (bare / void)
+
+ Other rules:
+    - No nested function declarations (no lambdas/closures)
+    - Function references are created with () prefix or ref()
+    - Function references must be const
+    - private restricts access to the declaring module
+*/
+import @arrays
+
+//BARE FUNCTION (no params, no return)
+do greet(){
+    println("Hello from Grayscale!")
+}
+//============================================================
+
+//SINGLE PARAMETER
+do double(x int) -> int {
+    return x * 2
+}
+//============================================================
+
+//MULTIPLE PARAMETERS
+do add(a int, b int) -> int {
+    return a + b
+}
+//============================================================
+
+//GROUPED PARAMETERS (same type shorthand)
+do multiply(a, b int) -> int {
+    return a * b
+}
+//============================================================
+
+//MUTABLE PARAMETERS (pass-by-reference with &)
+//At the call site the argument passed for x MUST be declared as mutable
+//otherwise a compile error will occur
+do increment(&x int) {
+    x = x + 1
+}
+
+do swap(&a, &b int) {
+    mut t int = a
+    a = b
+    b = t
+}
+
+do mutable_param_examples(){
+    mut val int = 5
+    increment(val)    // no & at the call site
+    println(val)      // 6
+
+    mut x int = 10
+    mut y int = 20
+    swap(x, y)
+    println("${x}, ${y}") // 20, 10
+}
+//============================================================
+
+//DEFAULT PARAMETERS
+do connect(host string, port int = 8080, verbose bool = false) {
+    if verbose {
+        println("Connecting to ${host}:${port}")
+    } otherwise {
+        println("${host}:${port}")
+    }
+}
+
+do default_param_examples(){
+    connect("localhost")              // port=8080, verbose=false
+    connect("localhost", 3000)        // port=3000, verbose=false
+    connect("localhost", 3000, true)  // port=3000, verbose=true
+}
+//============================================================
+
+//NAMED ARGUMENTS
+do create_user(name string, age int = 0, active bool = true) {
+    println("${name}, age ${age}, active: ${active}")
+}
+
+do named_arg_examples(){
+    // Skip over defaulted params by naming specific ones
+    create_user(name: "Paul", active: false)
+
+    // Order doesn't matter with named args
+    create_user(active: true, name: "Bob", age: 25)
+
+    // Mix positional and named (positional must come first)
+    create_user("Charlie", active: false)
+}
+//============================================================
+
+//SINGLE RETURN VALUE
+do square(x int) -> int {
+    return x * x
+}
+//============================================================
+
+//MULTIPLE RETURN VALUES (tuples)
+do divide(a, b int) -> (int, int) {
+    return a / b, a % b
+}
+
+do tuple_return_examples(){
+    mut quotient, remainder = divide(17, 5)
+    println("${quotient} remainder ${remainder}") // 3 remainder 2
+
+    // Discard a value with _
+    mut _, rem = divide(10, 3)
+    println(rem) // 1
+}
+//============================================================
+
+//NAMED RETURN VALUES (documentation labels only)
+do get_info() -> (name string, city string, age int) {
+    mut name string = "Paul"
+    mut city string = "NYC"
+    mut age int = 30
+    return name, city, age
+}
+
+do named_return_examples(){
+    mut n, c, a = get_info()
+    println("${n} from ${c}, age ${a}")
+}
+//============================================================
+
+//ERROR RETURNS
+do parse_positive(s string) -> (int, Error) {
+    if s == "" {
+        return 0, error("empty string")
+    }
+    return 42, nil
+}
+
+do error_return_examples(){
+    mut value, err = parse_positive("test")
+    if err != nil {
+        println("parse failed")
+    } otherwise {
+        println(value)
+    }
+
+    mut _, err2 = parse_positive("")
+    if err2 != nil {
+        println("caught empty string error")
+    }
+}
+//============================================================
+
+//FUNCTION REFERENCES
+do triple(n int) -> int {
+    return n * 3
+}
+
+do apply(x int, f func(int) -> int) -> int {
+    return f(x)
+}
+
+do func_ref_examples(){
+    // Create a reference with () prefix
+    const f = ()double
+    println(f(5)) // 10
+
+    // ref() syntax is equivalent
+    const g = ref(triple)
+    println(g(5)) // 15
+
+    // Pass as an argument
+    println(apply(4, ()double))  // 8
+    println(apply(4, ()triple)) // 12
+
+    // Comparison — same function = equal
+    const h = ()double
+    if f == h {
+        println("same function")
+    }
+}
+//============================================================
+
+//FUNCTION REFERENCES IN ARRAYS AND MAPS
+do negate(n int) -> int {
+    return 0 - n
+}
+
+do func_ref_collections(){
+    // Array of func refs
+    mut ops [func] = {}
+    arrays.append(ops, ()double)
+    arrays.append(ops, ()triple)
+    arrays.append(ops, ()negate)
+
+    println(ops[0](5))  // 10
+    println(ops[1](5))  // 15
+    println(ops[2](5))  // -5
+
+    // Map of func refs
+    mut dispatch [string:func] = {:}
+    dispatch["dbl"]  = ()double
+    dispatch["trpl"] = ()triple
+    dispatch["neg"]  = ()negate
+    println(dispatch["dbl"](3))  // 6
+    println(dispatch["neg"](3))  // -3
+}
+//============================================================
+
+//HIGHER-ORDER FUNCTIONS (func as parameter type)
+do each(arr [int], f func(int)) {
+    for_each v in arr {
+        f(v)
+    }
+}
+
+do print_val(n int) {
+    println(n)
+}
+
+do higher_order_examples(){
+    mut nums [int] = {10, 20, 30}
+    each(nums, ()print_val) // prints 10, 20, 30
+}
+//============================================================
+
+//PRIVATE FUNCTIONS (restricted to declaring module)
+private do internal_helper() -> string {
+    return "internal"
+}
+
+do public_wrapper() -> string {
+    // Can call private functions within the same module
+    return internal_helper()
+}
+//============================================================
+
+//VOID RETURN AND EARLY RETURN
+do process(x int) {
+    if x < 0 {
+        println("invalid")
+        return // void early return
+    }
+    println("processing ${x}")
+}
+//============================================================
+
+do main(){
+    greet()
+    println(double(5))
+    println(add(3, 7))
+    println(multiply(4, 5))
+    mutable_param_examples()
+    default_param_examples()
+    named_arg_examples()
+    println(square(6))
+    tuple_return_examples()
+    named_return_examples()
+    error_return_examples()
+    func_ref_examples()
+    func_ref_collections()
+    higher_order_examples()
+    println(public_wrapper())
+    process(10)
+    process(-1)
+}
