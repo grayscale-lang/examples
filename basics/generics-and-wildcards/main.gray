@@ -1,0 +1,135 @@
+// Generics & Wildcards — wildcard type (?), type parameters (<?>)
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Grayscale uses two mechanisms for generic-style programming:
+
+    Wildcard type (?):
+    - Used in function parameter and return types
+    - Binds to the concrete type of the argument at each call site
+    - ALL ? in a signature bind to the SAME type
+    - Cannot be used in variable declarations, struct fields, etc.
+
+    Type parameters (<?>):
+    - Allow passing a struct TYPE NAME as a function argument
+    - Used for reusable constructors and type-aware utilities
+    - Cannot be mixed with value parameters in the same function
+    - Only struct types can be passed (no primitives, no enums)
+*/
+
+
+//BASIC WILDCARD USAGE
+do identity(x ?) -> ? {
+    return x
+}
+
+do basic_wildcard(){
+    // ? binds to int
+    mut a = identity(42)
+    println(a)
+    println(type_of(a)) // "int"
+
+    // ? binds to string
+    mut b = identity("hello")
+    println(b)
+    println(type_of(b)) // "string"
+
+    // ? binds to bool
+    mut c = identity(true)
+    println(c)
+    println(type_of(c)) // "bool"
+}
+//============================================================
+
+//WILDCARD WITH MULTIPLE PARAMETERS
+do pick_first(a ?, b ?) -> ? {
+    return a
+}
+
+do multi_param_wildcard(){
+    // Both args must be the same type (? binds once)
+    mut result = pick_first(10, 20)
+    println(result) // 10
+
+    mut s = pick_first("hello", "world")
+    println(s) // "hello"
+
+    // This would be an error — conflicting bindings:
+    // pick_first(1, "hello") // ERROR: int vs string
+}
+//============================================================
+
+//WILDCARD WITH ARRAYS
+do first(arr [?]) -> ? {
+    return arr[0]
+}
+
+do last(arr [?]) -> ? {
+    return arr[len(arr) - 1]
+}
+
+do array_wildcard(){
+    mut nums [int] = {10, 20, 30}
+    println(first(nums)) // 10
+    println(last(nums))  // 30
+
+    mut names [string] = {"Alice", "Bob", "Charlie"}
+    println(first(names)) // "Alice"
+    println(last(names))  // "Charlie"
+}
+//============================================================
+
+//TYPE PARAMETERS — PASSING TYPES AS ARGUMENTS
+const Point struct {
+    x int
+    y int
+}
+
+const Config struct {
+    host string = "localhost"
+    port int = 8080
+}
+
+do make(T <?>) -> ^? {
+    return new(T)
+}
+
+do make_stack(T <?>) -> ? {
+    return T{}
+}
+
+do type_parameter_examples(){
+    // make() allocates on the heap, returns ^Point
+    mut p = make(Point)
+    p.x = 5
+    p.y = 10
+    println("${p.x}, ${p.y}")
+    println(type_of(p)) // "^Point"
+
+    // make_stack() returns a stack-allocated value
+    mut c = make_stack(Config)
+    println(c.host) // "localhost"
+    println(c.port) // 8080
+    println(type_of(c)) // "Config"
+}
+//============================================================
+
+//USING size_of WITH TYPE PARAMETERS
+do print_size(T <?>) {
+    println("${size_of(T)} bytes")
+}
+
+do size_examples(){
+    print_size(Point)
+    print_size(Config)
+}
+//============================================================
+
+do main(){
+    basic_wildcard()
+    multi_param_wildcard()
+    array_wildcard()
+    type_parameter_examples()
+    size_examples()
+}
