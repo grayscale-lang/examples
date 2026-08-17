@@ -1,0 +1,156 @@
+// Maps — declaration, access, iteration, and stdlib usage
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Maps are unordered key-value collections.
+
+    Rules:
+    - MUST be declared with 'mut' (const maps are not allowed)
+    - Keys must be a hashable type: int, uint, float, string, bool, char, or byte
+    - The 'map' keyword is optional: [string:int] and map[string:int] are identical
+    - Empty maps use {:}, NOT {} (which is an empty array)
+    - Accessing a non-existent key produces a runtime error
+    - Iteration order is undefined and varies between runs
+    - CANNOT be modified during for_each iteration (will panic)
+*/
+import @maps
+
+//DECLARING MAPS
+do declare_maps(){
+    // Short form (no map keyword)
+    mut ages [string:int] = {
+        "alice": 30,
+        "bob": 25,
+        "charlie": 35
+    }
+    println(ages)
+
+    // Long form (with map keyword)
+    mut scores map[string:int] = {"math": 95, "science": 88}
+    println(scores)
+
+    // Empty map
+    mut empty [string:int] = {:}
+    println(empty)
+}
+//============================================================
+
+//ACCESSING AND MODIFYING ENTRIES
+do access_and_modify(){
+    mut config [string:string] = {
+        "host": "localhost",
+        "port": "8080"
+    }
+
+    // Reading a value
+    println(config["host"]) // "localhost"
+
+    // Adding a new entry
+    config["protocol"] = "https"
+    println(config["protocol"]) // "https"
+
+    // Modifying an existing entry
+    config["port"] = "3000"
+    println(config["port"]) // "3000"
+
+    // Length
+    println(len(config)) // 3
+}
+//============================================================
+
+//ITERATING OVER MAPS
+do iterate_maps(){
+    mut colors [string:string] = {
+        "sky": "blue",
+        "grass": "green",
+        "sun": "yellow"
+    }
+
+    // Key and value
+    for_each key, value in colors {
+        println("${key} is ${value}")
+    }
+
+    // Keys only (single variable)
+    for_each key in colors {
+        println(key)
+    }
+}
+//============================================================
+
+//USING STDLIB MAP FUNCTIONS
+
+do use_stdlib_functions(){
+    mut inventory [string:int] = {
+        "apples": 5,
+        "bananas": 12,
+        "oranges": 8
+    }
+
+    // Check if empty
+    println(maps.is_empty(inventory)) // false
+
+    // Check for a key
+    println(maps.has_key(inventory, "apples")) // true
+    println(maps.has_key(inventory, "grapes")) // false
+
+    // Check for a value
+    println(maps.contains_value(inventory, 12)) // true
+
+    // Get with a default fallback
+    mut grape_count int = maps.get_or_default(inventory, "grapes", 0)
+    println(grape_count) // 0
+
+    // Get all keys and values as arrays
+    mut keys [string] = maps.get_keys(inventory)
+    mut values [int] = maps.get_values(inventory)
+    println(keys)
+    println(values)
+
+    // Remove a key
+    maps.remove_key(inventory, "bananas")
+    println(inventory)
+
+    // Merge two maps (second map wins on conflict)
+    mut extra [string:int] = {"grapes": 3, "apples": 10}
+    mut combined [string:int] = maps.merge(inventory, extra)
+    println(combined)
+
+    // Equality check
+    mut a [string:int] = {"x": 1, "y": 2}
+    mut b [string:int] = {"x": 1, "y": 2}
+    println(maps.is_equal(a, b)) // true
+
+    // Clear all entries
+    maps.clear(inventory)
+    println(maps.is_empty(inventory)) // true
+}
+//============================================================
+
+//MAPS WITH DIFFERENT KEY TYPES
+do different_key_types(){
+    // Integer keys
+    mut lookup [int:string] = {
+        1: "one",
+        2: "two",
+        3: "three"
+    }
+    println(lookup[2]) // "two"
+
+    // Boolean keys
+    mut flags [bool:string] = {
+        true: "enabled",
+        false: "disabled"
+    }
+    println(flags[true]) // "enabled"
+}
+//============================================================
+
+do main(){
+    declare_maps()
+    access_and_modify()
+    iterate_maps()
+    use_stdlib_functions()
+    different_key_types()
+}
