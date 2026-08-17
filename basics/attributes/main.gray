@@ -1,0 +1,169 @@
+// Attributes — #doc, #json, #flags, #strict, #discard
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ Attributes are annotations prefixed with # that modify declaration behavior.
+
+    Rules:
+    - One attribute per line, stacked before the declaration
+    - Order is irrelevant
+    - Each attribute applies to the immediately following declaration only
+    - Misapplied attributes are rejected (e.g., #json on a function)
+
+    Available attributes:
+    - #doc("...")  — documentation metadata (used by gray doc)
+    - #json       — enables JSON serialization for structs
+    - #flags      — marks enum as bitflag set (powers of 2)
+    - #strict     — requires exhaustive when/is matching
+    - #discard    — allows callers to ignore a function's return value
+*/
+
+import @json
+
+//#doc — DOCUMENTATION METADATA
+#doc("Adds two integers and returns the sum")
+do add(a int, b int) -> int {
+    return a + b
+}
+
+#doc("Represents a 2D coordinate")
+const Coordinate struct {
+    x int
+    y int
+}
+
+#doc("Maximum connection attempts before giving up")
+const MAX_RETRIES int = 5
+
+do doc_examples(){
+    println(add(3, 7)) // 10
+    mut c = Coordinate{x: 1, y: 2}
+    println("${c.x}, ${c.y}")
+}
+//============================================================
+
+//#json — JSON SERIALIZATION
+#json
+const User struct {
+    name string
+    age int
+    active bool
+}
+
+do json_examples(){
+    // Parse a JSON string directly into a typed struct
+    mut u User = json.parse("{\"name\": \"Jane\", \"age\": 25, \"active\": true}")
+    println(u.name)   // "Jane"
+    println(u.age)    // 25
+    println(u.active) // true
+
+    // Serialize back to JSON
+    println(json.stringify(u)) // {"name":"Jane","age":25,"active":true}
+
+    // Create a struct and serialize it
+    mut u2 = User{name: "Bob", age: 30, active: false}
+    println(json.stringify(u2))
+}
+//============================================================
+
+//#json WITH NESTED STRUCTS
+#json
+const Address struct {
+    street string
+    city string
+}
+
+#json
+const Employee struct {
+    name string
+    address Address
+}
+
+do nested_json_examples(){
+    mut raw string = "{\"name\": \"Charlie\", \"address\": {\"street\": \"123 Main St\", \"city\": \"Springfield\"}}"
+    mut emp Employee = json.parse(raw)
+    println(emp.name)           // "Charlie"
+    println(emp.address.city)   // "Springfield"
+    println(json.stringify(emp))
+}
+//============================================================
+
+//#flags — BITFLAG ENUMS
+#flags
+const FileMode enum {
+    READ      // 1
+    WRITE     // 2
+    EXECUTE   // 4
+}
+
+do flags_examples(){
+    // Flags values are powers of 2
+    mut r int = cast(FileMode.READ, int)
+    mut w int = cast(FileMode.WRITE, int)
+    mut e int = cast(FileMode.EXECUTE, int)
+    println(r) // 1
+    println(w) // 2
+    println(e) // 4
+}
+//============================================================
+
+//#strict — EXHAUSTIVE WHEN/IS MATCHING
+const Status enum {
+    PENDING
+    ACTIVE
+    CLOSED
+}
+
+do strict_examples(){
+    mut s Status = .ACTIVE
+
+    // #strict ensures ALL variants are handled (compiler error if one is missing)
+    #strict
+    when s {
+        is .PENDING { println("pending") }
+        is .ACTIVE { println("active") }
+        is .CLOSED { println("closed") }
+    }
+}
+//============================================================
+
+//#discard — ALLOW IGNORING RETURN VALUES
+#discard
+do try_insert(value int) -> bool {
+    // Returns true on success, but callers may not care
+    println("inserted ${value}")
+    return true
+}
+
+do discard_examples(){
+    // Without #discard, calling without capturing the return would be an error
+    try_insert(42)                 // OK — no error, return value discarded
+    mut ok bool = try_insert(7)   // also OK — capturing is still allowed
+    println(ok)
+}
+//============================================================
+
+//STACKING MULTIPLE ATTRIBUTES
+#doc("A data transfer object for API responses")
+#json
+const ApiResponse struct {
+    status int
+    message string
+}
+
+do stacked_attribute_examples(){
+    mut resp = ApiResponse{status: 200, message: "OK"}
+    println(json.stringify(resp))
+}
+//============================================================
+
+do main(){
+    doc_examples()
+    json_examples()
+    nested_json_examples()
+    flags_examples()
+    strict_examples()
+    discard_examples()
+    stacked_attribute_examples()
+}
