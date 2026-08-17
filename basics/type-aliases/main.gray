@@ -1,0 +1,120 @@
+// Type Aliases — creating interchangeable names for existing types
+// Author: Marshall A Burns
+// GitHub: @SchoolyB
+
+/*
+ The 'alias' keyword creates an interchangeable name for an existing type.
+
+    Rules:
+    - File-scope only (cannot be declared inside functions)
+    - Public by default (prefix with 'private' to restrict)
+    - Erased at compile time (no runtime overhead)
+    - type_of() returns the UNDERLYING type name, not the alias
+    - Can alias: primitives, structs, enums, arrays, maps, pointers
+    - Cannot alias: module-qualified types or wildcard (?)
+    - Transitive: aliases can chain (alias A = int, alias B = A)
+*/
+
+
+//PRIMITIVE TYPE ALIASES
+alias Meters = float
+alias Seconds = int
+alias Name = string
+
+do primitive_alias_examples(){
+    mut distance Meters = 100.5
+    mut duration Seconds = 30
+    mut person Name = "Victor"
+
+    println(distance)
+    println(duration)
+    println(person)
+
+    // type_of returns the underlying type, not the alias
+    println(type_of(distance)) // "float"
+    println(type_of(duration)) // "int"
+
+    // Fully interchangeable with the underlying type
+    mut d float = distance + 1.0
+    println(d) // 101.5
+}
+//============================================================
+
+//STRUCT ALIASES
+const Point struct {
+    x int
+    y int
+}
+
+alias Vec2 = Point
+
+do struct_alias_examples(){
+    // Use the alias like the original type
+    mut p Vec2 = Point{x: 3, y: 4}
+    println("${p.x}, ${p.y}")
+    println(type_of(p)) // "Point"
+}
+//============================================================
+
+//ENUM ALIASES
+const Color enum {
+    RED
+    GREEN
+    BLUE
+}
+
+alias Hue = Color
+
+do enum_alias_examples(){
+    mut c Hue = Hue.RED
+    println(c)
+
+    // Works with implicit selector
+    mut c2 Hue = .GREEN
+    println(c2)
+}
+//============================================================
+
+//COLLECTION ALIASES
+alias Names = [string]
+alias Scores = [string:int]
+
+do collection_alias_examples(){
+    mut people Names = {"Victor", "Bob", "Charlie"}
+    println(people)
+
+    mut grades Scores = {"math": 95, "science": 88}
+    println(grades)
+}
+//============================================================
+
+//TRANSITIVE ALIASES (chaining)
+alias Distance = float
+alias Kilometers = Distance
+
+do transitive_alias_examples(){
+    mut km Kilometers = 42.195
+    println(km)
+    println(type_of(km)) // "float"
+}
+//============================================================
+
+//PRIVATE ALIASES
+private alias InternalID = int
+
+do private_alias_examples(){
+    // Private aliases are accessible within this file
+    mut id InternalID = 12345
+    println(id)
+    // Other modules importing this file cannot use InternalID
+}
+//============================================================
+
+do main(){
+    primitive_alias_examples()
+    struct_alias_examples()
+    enum_alias_examples()
+    collection_alias_examples()
+    transitive_alias_examples()
+    private_alias_examples()
+}
